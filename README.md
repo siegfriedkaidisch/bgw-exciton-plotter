@@ -83,7 +83,7 @@ The script prints progress and writes `density.cube`, which can be loaded in vis
 ## Current Limitations
 
 - **No Noncollinear Spin**: Only `spin-unpolarized` (SU) and `spin-polarized collinear` (SPC) wavefunctions are supported.
-- **Zero Momentum Transfer Only**: \(\mathbf{Q}\neq 0\) excitons are not implemented.
+- **Zero Momentum Transfer Only**: Q ≠ 0 excitons are not implemented.
 - **Spin-Singlet Only**: Triplet excitons are not supported.
 
 ---
@@ -102,4 +102,4 @@ This project is licensed under the MIT License. See `LICENSE` for details.
 
 ## Known issues
 
-For a list of known issues please see the `issues page on GitHub <https://github.com/siegfriedkaidisch/bgw-exciton-plotter/issues>`_, otherwise please open a new issue.
+For a list of known issues please see the [issues page on GitHub](https://github.com/siegfriedkaidisch/bgw-exciton-plotter/issues), otherwise please open a new issue.
