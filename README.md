@@ -82,7 +82,7 @@ The script prints progress and writes `density.cube`, which can be loaded in vis
 
 ## Current Limitations
 
-- **No Noncollinear Spin**: Only `spin-unpolarized` (SU) and `spin-polarized collinear` (SPC) wavefunctions are supported.
+- **No Noncollinear Spin**: Only spin-unpolarized (SU) and spin-polarized collinear (SPC) wavefunctions are supported.
 - **Zero Momentum Transfer Only**: `Q ≠ 0` excitons are not implemented.
 - **Spin-Singlet Only**: Triplet excitons are not supported.
 
