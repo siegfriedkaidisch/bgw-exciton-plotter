@@ -1,4 +1,4 @@
-**BerkeleyGW Exciton Plotter**
+# BerkeleyGW Exciton Plotter
 
 A Python toolkit for computing exciton electron- or hole-density distributions (hole-averaged electron-density or electron-averaged hole-density) from BerkeleyGW Bethe–Salpeter Equation (BSE) eigenvectors and Quantum ESPRESSO (QE) wavefunctions. Outputs Gaussian cube files suitable for visualization in VESTA, VMD, or other visualization software.
 
