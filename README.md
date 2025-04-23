@@ -27,7 +27,7 @@ A Python toolkit for computing exciton electron- or hole-density distributions (
 
 - **Data**:
   - BerkeleyGW BSE eigenvectors file (`eigenvectors.h5`)
-  - Quantum ESPRESSO save directory (containing wave functions as hdf5 or dat files) and XML output file
+  - Quantum ESPRESSO save directory (containing wave functions as `hdf5` or `dat` files) and `XML` output file
   - Geometry file readable by ASE (e.g., QE input file)
 
 ---
@@ -83,7 +83,7 @@ The script prints progress and writes `density.cube`, which can be loaded in vis
 ## Current Limitations
 
 - **No Noncollinear Spin**: Only `spin-unpolarized` (SU) and `spin-polarized collinear` (SPC) wavefunctions are supported.
-- **Zero Momentum Transfer Only**: Q ≠ 0 excitons are not implemented.
+- **Zero Momentum Transfer Only**: `Q ≠ 0` excitons are not implemented.
 - **Spin-Singlet Only**: Triplet excitons are not supported.
 
 ---
