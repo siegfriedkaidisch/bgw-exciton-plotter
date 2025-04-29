@@ -40,7 +40,7 @@ fname_geometry = calc_folder + "QEfolder/QE.in"
 fname_out = "density.cube"
 
 # Choose exciton
-m = 0  # exciton number
+m = [0]  # exciton number
 Q = 0  # Q index, Q-vector must be 0!
 
 # Mode:
