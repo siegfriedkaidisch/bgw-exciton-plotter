@@ -291,7 +291,7 @@ print(now.strftime("%Y-%m-%d %H:%M:%S"))
 print("Starting calculation of wave functions in real space.")
 # Create batches of G-indices for vectorized treatment
 numG = len(G_full)
-numG_batch = int(mem_control * np.floor(2 * 10**9 / n1 * n2 * n3))
+numG_batch = int(mem_control * np.floor(2 * 10**9 / (n1 * n2 * n3)))
 numG_batch = min(numG_batch, numG)
 print(
     "Batch-size (i.e. number of G-vectors to be used in a vectorized fashion)"
