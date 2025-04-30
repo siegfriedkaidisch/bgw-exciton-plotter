@@ -196,7 +196,7 @@ def cart_to_direct(vec, cell, transpose=True, npa=True):
     return out
 
 
-def generate_grid(cell, n1, n2, n3):
+def generate_grid(cell, n1, n2, n3, cell_bounds=[0,1,0,1,0,1]):
     """
     Generate a 3D mesh of points within a parallelepiped defined by unit vectors.
 
@@ -206,6 +206,11 @@ def generate_grid(cell, n1, n2, n3):
         A 3x3 array where each row is a unit vector of the cell.
     n1, n2, n3 : int
         Number of voxels along each vector direction.
+    cell_bounds : list of six int, optional, default: [0,1,0,1,0,1]
+        Unit cell boundaries in each +/- direction.
+        E.g., the first two numbers determine the boundaries in the 0th direction, i.e.
+        -1,1 means, that the grid spans from -1*cell[0] to +1*cell[0].
+        By default, only one unit cell is spanned.
 
     Returns
     -------
@@ -213,9 +218,9 @@ def generate_grid(cell, n1, n2, n3):
         Array containing the coordinates of each voxel.
     """
     # Create voxel indices
-    x = np.linspace(0, 1, n1, endpoint=False)
-    y = np.linspace(0, 1, n2, endpoint=False)
-    z = np.linspace(0, 1, n3, endpoint=False)
+    x = np.linspace(cell_bounds[0], cell_bounds[1], n1, endpoint=False)
+    y = np.linspace(cell_bounds[2], cell_bounds[3], n2, endpoint=False)
+    z = np.linspace(cell_bounds[4], cell_bounds[5], n3, endpoint=False)
 
     # Create a 3D grid of indices
     grid_x, grid_y, grid_z = np.meshgrid(x, y, z, indexing="ij")
