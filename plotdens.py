@@ -36,7 +36,7 @@ fname_e = calc_folder + "QEfolder/QE.xml"
 # Path to a file containing the geometry, that is readable by ASE (e.g. QE's input file)
 fname_geometry = calc_folder + "QEfolder/QE.in"
 
-# Path where cube-file will be saved to ("_m=xxx.cube" will be added to fname_out)
+# Path where cube-file will be saved to ("_m=xxx_e/h.cube" will be added to fname_out)
 fname_out = "density"
 
 # Choose exciton
@@ -49,7 +49,8 @@ Q = 0  # Q index, Q-vector must be 0!
 mode = "h"
 
 # Grid settings, number of voxels along unit-cell vectors
-n1, n2, n3 = 16, 4, 20
+factor = 4
+n1, n2, n3 = 4*factor, 1*factor, 5*factor
 
 # Decrease this number, if you run out of memory, increase it, to potentially speed up calculations
 mem_control = 1.0
@@ -369,10 +370,10 @@ elif mode == "h":
     density = np.sum(density, axis=(1, 2))  # (m, x,y,z)
 print(
     f"Done. Shape of density array: excitons={density.shape[0]}, "
-    +f"grid={density.shape[1]} * {density.shape[2]} * {density.shape[3]}"
+    +f"grid={density.shape[1]}*{density.shape[2]}*{density.shape[3]}"
 )
 dV = cell.volume / (n1 * n2 * n3) # AA^3
-density /= np.sum(np.abs(density),axis=(1,2,3)) * dV
+density /= np.sum(np.abs(density),axis=(1,2,3))[:,np.newaxis,np.newaxis,np.newaxis] * dV
 print("Normalized density to unit cell.")
 print("Real part of density:", np.sum(np.abs(np.real(density)),axis=(1,2,3)) * dV)
 print(
@@ -390,7 +391,7 @@ elif mode == "h":
     line1 = "Electron-averaged hole density;"
 for m_i in m:
     line2 = "Exciton: m-index=" + str(m_i) + ",Q-index=" + str(Q) 
-    fname_out_i = fname_out + "_m=" + str(m_i) + ".cube"
+    fname_out_i = fname_out + "_m=" + str(m_i) + "_" + mode + ".cube"
     write_gaussian_cube(
         filename=fname_out_i, atoms=atoms, data=density[m_i], line1=line1, line2=line2
     )

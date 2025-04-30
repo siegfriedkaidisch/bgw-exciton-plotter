@@ -65,7 +65,7 @@ n1, n2, n3 = 16, 4, 20
 # Memory control for FFT batching
 mem_control = 1.0
 
-# Output ("_m=xxx.cube" will be added to fname_out)
+# Output ("_m=xxx_e/h.cube" will be added to fname_out)
 fname_out = "density"
 ```
 
@@ -77,7 +77,7 @@ cd bgw-exciton-plotter
 python plotdens.py
 ```
 
-The script prints progress and writes `density_m=xxx.cube` files, which can be loaded in visualization tools.
+The script prints progress and writes `density_m=xxx_e/h.cube` files, which can be loaded in visualization tools.
 
 ---
 
