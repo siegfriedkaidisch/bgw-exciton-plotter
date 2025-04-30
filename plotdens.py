@@ -84,7 +84,7 @@ print(f"Path to QE wavefunctions (WFN folder): {fname_wfn}")
 print(f"Path to QE XML file: {fname_e}")
 print(f"Path to geometry file (ASE-readable): {fname_geometry}")
 print("=== Output ===")
-print(f"Output cube file will be saved to: {fname_out}")
+print(f"Output cube files will be saved to: {fname_out}")
 print("================== End of Settings ==================")
 
 # Load atoms and generate grid
