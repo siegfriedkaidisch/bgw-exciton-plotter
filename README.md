@@ -11,6 +11,7 @@ A Python toolkit for computing exciton electron- or hole-density distributions (
 - **Exciton Types**: Only spin-singlet excitons are supported.
 - **Momentum Transfer**: Only zero momentum transfer (`Q = 0`) excitons.
 - **Flexible Grid**: Customizable real-space grid resolution `(n₁ × n₂ × n₃)`.
+- **Vectorized Exciton Treatment**: Efficiently creates `cube` files for multiple excitons in one go.
 - **Memory Control**: Adjustable batching for Fourier transforms to suit available memory.
 
 ---
@@ -54,7 +55,7 @@ fname_e        = "/path/to/qe.xml"
 fname_geometry = "/path/to/geometry"
 
 # Which density to plot
-m    = 0      # exciton index
+m    = [0,1]  # list of exciton indices to plot
 Q    = 0      # Q-index (such that Q-vector is 0)
 mode = "h"    # "h" for hole density, "e" for electron density
 
@@ -64,8 +65,8 @@ n1, n2, n3 = 16, 4, 20
 # Memory control for FFT batching
 mem_control = 1.0
 
-# Output
-fname_out = "density.cube"
+# Output ("_m=xxx_e/h.cube" will be added to fname_out)
+fname_out = "density"
 ```
 
 Then run:
@@ -76,7 +77,7 @@ cd bgw-exciton-plotter
 python plotdens.py
 ```
 
-The script prints progress and writes `density.cube`, which can be loaded in visualization tools.
+The script prints progress and writes `density_m=xxx_e/h.cube` files, which can be loaded in visualization tools.
 
 ---
 

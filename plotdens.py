@@ -36,11 +36,11 @@ fname_e = calc_folder + "QEfolder/QE.xml"
 # Path to a file containing the geometry, that is readable by ASE (e.g. QE's input file)
 fname_geometry = calc_folder + "QEfolder/QE.in"
 
-# Path where cube-file will be saved to
-fname_out = "density.cube"
+# Path where cube-file will be saved to ("_m=xxx_e/h.cube" will be added to fname_out)
+fname_out = "density"
 
 # Choose exciton
-m = 0  # exciton number
+m = [0,1]  # list of exciton numbers to plot
 Q = 0  # Q index, Q-vector must be 0!
 
 # Mode:
@@ -49,7 +49,8 @@ Q = 0  # Q index, Q-vector must be 0!
 mode = "h"
 
 # Grid settings, number of voxels along unit-cell vectors
-n1, n2, n3 = 16, 4, 20
+factor = 4
+n1, n2, n3 = 4*factor, 1*factor, 5*factor
 
 # Decrease this number, if you run out of memory, increase it, to potentially speed up calculations
 mem_control = 1.0
@@ -68,11 +69,11 @@ t1 = time.time()
 # Print settings
 if mode == "e":
     print(
-        f"Calculating hole-averaged electron-density for exciton m={m} and Q_index={Q}."
+        f"Calculating hole-averaged electron-density for excitons m={m} and Q_index={Q}."
     )
 elif mode == "h":
     print(
-        f"Calculating electron-averaged hole-density for exciton m={m} and Q_index={Q}."
+        f"Calculating electron-averaged hole-density for excitons m={m} and Q_index={Q}."
     )
 print("================= Start of Settings =================")
 print("Number of voxels along unit-cell vectors:", n1, n2, n3)
@@ -105,13 +106,13 @@ print(f"Created real-space grid of shape: {n1}*{n2}*{n3}.")
 
 # Load BSE eigenvector
 bse_evecs, meta_bse = read_bse_eigenvectors(
-    fname=fname_bse_evec, n_max=m + 1, meta_only=False, ev_only=True, analyze=False
+    fname=fname_bse_evec, n_max=max(m) + 1, meta_only=False, ev_only=True, analyze=False
 )
-bse_evec = bse_evecs[Q, m]  # remaining: (spin, v, c, q)
-print(f"Loaded BSE eigenvector for m={m} and Q_index={Q}.")
+bse_evec = bse_evecs[Q, m]  # remaining: (m, spin, v, c, q)
+print(f"Loaded BSE eigenvectors for m={m} and Q_index={Q}.")
 print(
-    f"Shape: spins={bse_evec.shape[0]}, vbands={bse_evec.shape[1]}"
-    + f", cbands={bse_evec.shape[2]}, q-pts={bse_evec.shape[3]}"
+    f"Shape: excitons={bse_evec.shape[0]}, spins={bse_evec.shape[1]}, vbands={bse_evec.shape[2]}"
+    + f", cbands={bse_evec.shape[3]}, q-pts={bse_evec.shape[4]}"
 )
 # Check that Q vector is 0:
 Q_vector = meta_bse["kpoints"]["exciton_Q_shifts"][Q]
@@ -124,8 +125,8 @@ if np.linalg.norm(Q_vector) != 0:
 num_v_dft = get_number_of_valence_bands_qe(fname=fname_e)
 print("Number of valence bands in DFT/QE calculation:", num_v_dft)
 # Get number of valence and conduction bands used in BSE
-num_v_bse = np.shape(bse_evec)[1]
-num_c_bse = np.shape(bse_evec)[2]
+num_v_bse = np.shape(bse_evec)[2]
+num_c_bse = np.shape(bse_evec)[3]
 # Define indices of bands to be loaded
 if mode == "e":
     ibands = [num_v_dft + i for i in range(num_c_bse)]
@@ -261,6 +262,10 @@ for miller, c_snq in zip(miller_list, c_snq_list):
     c_snq_grids.append(c_snq_grid)
 # Finally, combine all grids into one array
 c_snq = np.array(c_snq_grids)
+if mode=="h":
+    # Order of bands in c_snq is ascending with band number
+    # However, we want the first index to be HOMO, next HOMO-1, etc -> flip axis
+    c_snq = np.flip(c_snq, axis=2)
 print("Finished combining all wave function coefficients into one numpy array.")
 print(
     f"Resulting array is of shape: qpts={c_snq.shape[0]}, spins={c_snq.shape[1]}, "
@@ -315,7 +320,7 @@ for G_list in tqdm(G_lists):
     )  # (G, x,y,z) 51% of time
     # Output is huge! -> that's why we split G-vectors up and iterate over batches!
 
-    # Select wavefunction coefs # takes most of the time
+    # Select wavefunction coefs
     c_snq_tmp = c_snq[:, :, :, G_list]  # (q, spin, bands, G)
 
     # Calculate wavefunction
@@ -334,64 +339,67 @@ print(
 # Prepare BSE eigenvector
 if mode == "e":
     # For hole-averaged electron-density, sum over valence bands
-    XX = np.einsum("svcq,svdq->scdq", bse_evec, np.conjugate(bse_evec))  # (s,c,c',q)
+    XX = np.einsum("msvcq,msvdq->mscdq", bse_evec, np.conjugate(bse_evec))  # (m,s,c,c',q)
     # XX = np.sum(bse_evec[:,:,:, np.newaxis,:] * np.conjugate(bse_evec[:,:, np.newaxis,:,:]),axis=1)
     print(
         "Multiplied BSE eigenvector with itself, following the formula for the hole-averaged electron-density."
     )
 elif mode == "h":
     # For electron-averaged hole-density, sum over conduction bands
-    XX = np.einsum("svcq,swcq->svwq", bse_evec, np.conjugate(bse_evec))  # (s,v,v',q)
+    XX = np.einsum("msvcq,mswcq->msvwq", bse_evec, np.conjugate(bse_evec))  # (m,s,v,v',q)
     print(
         "Multiplied BSE eigenvector with itself, following the formula for the electron-averaged hole-density."
     )
 
 print("Finally, putting all parts together and sum over spin, bands and q-vectors.")
 if mode == "e":
-    # XX: (s,c,c',q)
+    # XX: (m,s,c,c',q)
     # wfn_real_snq: (q,s,c,x,y,z)
-    XX = np.transpose(XX, (3, 0, 1, 2))  # (q,s,c,c')
-    XX = XX[:, :, :, :, np.newaxis, np.newaxis, np.newaxis]  # (q,s,c,c',x,y,z)
-    density = wfn_real_snq[:, :, :, np.newaxis, :, :, :]  # (q,s,c, c', x,y,z)
-    density = np.sum(XX * density, axis=2)  # (q,s, c', x,y,z)
-    density = np.sum(density * np.conjugate(wfn_real_snq), axis=2)  # (q,s, x,y,z)
-    density = np.sum(density, axis=(0, 1))  # (x,y,z)
+    XX = np.transpose(XX, (0, 4, 1, 2, 3))  # (m,q,s,c,c')
+    XX = XX[:, :, :, :, :, np.newaxis, np.newaxis, np.newaxis]  # (m,q,s,c,c',x,y,z)
+    density = wfn_real_snq[np.newaxis, :, :, :, np.newaxis, :, :, :]  # (m,q,s,c, c', x,y,z)
+    density = np.sum(XX * density, axis=3)  # (m,q,s, c', x,y,z)
+    density = np.sum(density * np.conjugate(wfn_real_snq), axis=3)  # (m,q,s, x,y,z)
+    density = np.sum(density, axis=(1, 2))  # (m, x,y,z)
 elif mode == "h":
-    # XX: (s,v,v',q)
+    # XX: (m,s,v,v',q)
     # wfn_real_snq: (q,s,v,x,y,z)
-    XX = np.transpose(XX, (3, 0, 1, 2))  # (q,s,v,v')
-    XX = XX[:, :, :, :, np.newaxis, np.newaxis, np.newaxis]  # (q,s,v,v',x,y,z)
+    XX = np.transpose(XX, (0, 4, 1, 2, 3))  # (m, q,s,v,v')
+    XX = XX[:, :, :, :, :, np.newaxis, np.newaxis, np.newaxis]  # (m,q,s,v,v',x,y,z)
     density = np.conjugate(
-        wfn_real_snq[:, :, :, np.newaxis, :, :, :]
-    )  # (q,s,v, v', x,y,z)
-    density = np.sum(XX * density, axis=2)  # (q,s, v', x,y,z)
-    density = np.sum(density * wfn_real_snq, axis=2)  # (q,s, x,y,z)
-    density = np.sum(density, axis=(0, 1))  # (x,y,z)
+        wfn_real_snq[np.newaxis, :, :, :, np.newaxis, :, :, :]
+    )  # (m,q,s,v, v', x,y,z)
+    density = np.sum(XX * density, axis=3)  # (m,q,s, v', x,y,z)
+    density = np.sum(density * wfn_real_snq, axis=3)  # (m,q,s, x,y,z)
+    density = np.sum(density, axis=(1, 2))  # (m, x,y,z)
 print(
-    f"Done. Shape of density array: {density.shape[0]} * {density.shape[1]} * {density.shape[2]}"
+    f"Done. Shape of density array: excitons={density.shape[0]}, "
+    +f"grid={density.shape[1]}*{density.shape[2]}*{density.shape[3]}"
 )
 dV = cell.volume / (n1 * n2 * n3) # AA^3
-density /= np.sum(np.abs(density)) * dV
+density /= np.sum(np.abs(density),axis=(1,2,3))[:,np.newaxis,np.newaxis,np.newaxis] * dV
 print("Normalized density to unit cell.")
-print("Real part of density:", np.sum(np.abs(np.real(density))) * dV)
+print("Real part of density:", np.sum(np.abs(np.real(density)),axis=(1,2,3)) * dV)
 print(
     "Imaginary part of density (should be zero!):",
-    np.sum(np.abs(np.imag(density))) * dV,
+    np.sum(np.abs(np.imag(density)),axis=(1,2,3)) * dV,
 )
 density = np.real(density)
 print("Dropped imaginary part.")
-print("Minimal value in density array (should not be negative!):", np.min(density))
+print("Minimal value in density array (should not be negative!):", np.min(density,axis=(1,2,3)))
 
-# Create cube file and save to disk
+# Create cube file (one per m) and save to disk
 if mode == "e":
     line1 = "Hole-averaged electron density;"
 elif mode == "h":
     line1 = "Electron-averaged hole density;"
-line2 = "Exciton: m-index=" + str(m) + ",Q-index=" + str(Q)
-write_gaussian_cube(
-    filename=fname_out, atoms=atoms, data=density, line1=line1, line2=line2
-)
-print(f"Saved density to disk at: {fname_out}")
+for m_i in m:
+    line2 = "Exciton: m-index=" + str(m_i) + ",Q-index=" + str(Q) 
+    fname_out_i = fname_out + "_m=" + str(m_i) + "_" + mode + ".cube"
+    write_gaussian_cube(
+        filename=fname_out_i, atoms=atoms, data=density[m_i], line1=line1, line2=line2
+    )
+    print(f"Saved density to disk at: {fname_out_i}")
 
 # Print total passed time
 print(line_splitter)
