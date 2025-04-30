@@ -262,6 +262,10 @@ for miller, c_snq in zip(miller_list, c_snq_list):
     c_snq_grids.append(c_snq_grid)
 # Finally, combine all grids into one array
 c_snq = np.array(c_snq_grids)
+if mode=="h":
+    # Order of bands in c_snq is ascending with band number
+    # However, we want the first index to be HOMO, next HOMO-1, etc -> flip axis
+    c_snq = np.flip(c_snq, axis=2)
 print("Finished combining all wave function coefficients into one numpy array.")
 print(
     f"Resulting array is of shape: qpts={c_snq.shape[0]}, spins={c_snq.shape[1]}, "
