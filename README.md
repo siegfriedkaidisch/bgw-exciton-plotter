@@ -11,7 +11,7 @@ A Python toolkit for computing exciton electron- or hole-density distributions (
 - **Exciton Types**: Only spin-singlet excitons are supported.
 - **Momentum Transfer**: Only zero momentum transfer (`Q = 0`) excitons.
 - **Flexible Grid**: Customizable real-space grid resolution `(n₁ × n₂ × n₃)`.
-- **Parallel Exciton Treatment**: Efficiently creates cube files for multiple excitons in one go.
+- **Vectorized Exciton Treatment**: Efficiently creates cube files for multiple excitons in one go.
 - **Memory Control**: Adjustable batching for Fourier transforms to suit available memory.
 
 ---

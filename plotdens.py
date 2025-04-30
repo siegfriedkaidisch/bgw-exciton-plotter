@@ -315,7 +315,7 @@ for G_list in tqdm(G_lists):
     )  # (G, x,y,z) 51% of time
     # Output is huge! -> that's why we split G-vectors up and iterate over batches!
 
-    # Select wavefunction coefs # takes most of the time
+    # Select wavefunction coefs
     c_snq_tmp = c_snq[:, :, :, G_list]  # (q, spin, bands, G)
 
     # Calculate wavefunction
